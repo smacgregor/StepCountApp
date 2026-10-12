@@ -12,14 +12,12 @@ The project will be structured as a single-target watchOS application with a sep
 
 ```text
 StepCountApp/
+├── Shared/                              # Shared source directory
+│   └── HealthKitService.swift          # HealthKit data access service
 ├── StepCountApp/                        # Main watchOS application target
 │   ├── StepCountApp.swift              # App entry point
 │   ├── Views/
 │   │   └── ContentView.swift           # Main app view
-│   ├── Models/
-│   │   └── StepCountData.swift         # Step count data model
-│   ├── Services/
-│   │   └── HealthKitService.swift      # HealthKit data access service
 │   └── Assets.xcassets                 # App assets
 ├── StepCountWidgetExtension/           # WidgetKit extension target
 │   ├── StepCountTimelineProvider.swift # WidgetKit timeline provider
@@ -34,9 +32,7 @@ StepCountApp/
 
 - **StepCountApp:** watchOS application target with all UI and app logic.
 - **StepCountWidgetExtension:** WidgetKit extension target for complications.
-- **HealthKitService.swift:** Shared data access component compiled into both targets (explicitly included in both `sources` sections of project.yml).
-- **StepCountTimelineProvider:** WidgetKit timeline provider implementation.
-- **StepCountWidgetView:** Custom SwiftUI views for widget display.
+- **HealthKitService.swift:** Shared data access component in the top-level Shared directory, included exactly once in each target's sources configuration.
 
 ## 3. System Requirements
 
@@ -138,14 +134,14 @@ targets:
     platform: watchOS
     sources:
       - path: StepCountApp
-      - path: StepCountApp/Services/HealthKitService.swift
+      - path: Shared/HealthKitService.swift
 
   StepCountWidgetExtension:
     type: app-extension.watchos
     platform: watchOS
     sources:
       - path: StepCountWidgetExtension
-      - path: StepCountApp/Services/HealthKitService.swift
+      - path: Shared/HealthKitService.swift
 ```
 
 ## 7. Implementation Strategy
@@ -179,9 +175,10 @@ targets:
 
 ### 8.2 Configuration
 
-- Configure the required HealthKit entitlement for each target that needs HealthKit access.
+- Configure the required HealthKit capability for each target that needs HealthKit access.
 - Include `NSHealthShareUsageDescription` in both the main app and extension Info.plists.
 - Remove assumption of background modes unless genuine need is demonstrated through supported implementation.
+- The main app initiates the authorization flow; the widget queries HealthKit directly when its timeline provider executes.
 
 ## 9. Testing Approach
 
@@ -234,8 +231,9 @@ These features can be implemented as extensions to the existing architecture wit
 3. **XcodeGen integration:** Complete configuration managed through `project.yml`.
 4. **Service-oriented architecture:** Clean separation of data access from UI logic.
 5. **Direct HealthKit querying:** Widget queries HealthKit directly, not using App Group or saved value cache.
-6. **Appropriate error handling:** Graceful degradation when HealthKit authorization is missing.
-7. **WidgetKit compliance:** Proper implementation following Apple's widget guidelines.
-8. **Minimal approach:** No background delivery or extra service layers beyond essentials.
+6. **Shared source organization:** HealthKitService in Shared directory with explicit inclusion in each target once only.
+7. **Appropriate error handling:** Graceful degradation when HealthKit authorization is missing.
+8. **WidgetKit compliance:** Proper implementation following Apple's widget guidelines.
+9. **Minimal approach:** No background delivery or extra service layers beyond essentials.
 
 This design document provides a robust foundation for the Step Count App that meets all current requirements while providing flexibility for future enhancements.
