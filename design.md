@@ -49,8 +49,7 @@ StepCountApp/
 2. **WidgetKit:** Widget extension configuration.
 
 **Privacy settings:**
-- Configure the HealthKit usage description in `Info.plist` for each target that needs HealthKit access.
-- For step count widget, we need `NSHealthShareUsageDescription` in both targets' Info.plists.
+- Entitlements are managed through XcodeGen's `info` configuration in `project.yml`, where properties like `NSHealthShareUsageDescription` are defined directly within each target's `info.properties` section.
 
 ### 3.3 Data Source Implementation
 
@@ -130,18 +129,24 @@ options:
 
 targets:
   StepCountApp:
-    type: application.watchos
+    type: application.watchapp2
     platform: watchOS
     sources:
       - path: StepCountApp
       - path: Shared/HealthKitService.swift
+    info:
+      properties:
+        NSHealthShareUsageDescription: "This app needs access to your step count data to display it on the watch face."
 
   StepCountWidgetExtension:
-    type: app-extension.watchos
+    type: watchkit2-extension
     platform: watchOS
     sources:
       - path: StepCountWidgetExtension
       - path: Shared/HealthKitService.swift
+    info:
+      properties:
+        NSHealthShareUsageDescription: "This app needs access to your step count data to display it on the watch face."
 ```
 
 ## 7. Implementation Strategy
@@ -176,7 +181,7 @@ targets:
 ### 8.2 Configuration
 
 - Configure the required HealthKit capability for each target that needs HealthKit access.
-- Include `NSHealthShareUsageDescription` in both the main app and extension Info.plists.
+- Both the main app and extension targets include NSHealthShareUsageDescription in their respective info.properties sections of `project.yml` 
 - Remove assumption of background modes unless genuine need is demonstrated through supported implementation.
 - The main app initiates the authorization flow; the widget queries HealthKit directly when its timeline provider executes.
 
@@ -235,5 +240,6 @@ These features can be implemented as extensions to the existing architecture wit
 7. **Appropriate error handling:** Graceful degradation when HealthKit authorization is missing.
 8. **WidgetKit compliance:** Proper implementation following Apple's widget guidelines.
 9. **Minimal approach:** No background delivery or extra service layers beyond essentials.
+10. **XCodeGen configuration:** All build-time settings, including Info.plist entries and entitlements are managed through `project.yml` using XcodeGen's `info.properties` configuration.
 
 This design document provides a robust foundation for the Step Count App that meets all current requirements while providing flexibility for future enhancements.
