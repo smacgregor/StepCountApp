@@ -8,7 +8,8 @@ This document outlines the architecture, data flow, build system, and other desi
 
 ### 2.1 Application Structure
 
-The project will be structured as a single-target watchOS application with a separate WidgetKit extension target:
+The project will contain a native watchOS application target and a separate WidgetKit extension target that provides the circular Apple Watch complication.
+
 
 ```text
 StepCountApp/
@@ -20,6 +21,7 @@ StepCountApp/
 │   │   └── ContentView.swift           # Main app view
 │   └── Assets.xcassets                 # App assets
 ├── StepCountWidgetExtension/           # WidgetKit extension target
+│   ├── StepCountWidget.swift           # Declares the WidgetKit widget, identifies the supported .accessoryCircular family, and connects the timeline provider to the widget view.
 │   ├── StepCountTimelineProvider.swift # WidgetKit timeline provider
 │   ├── Views/
 │   │   └── StepCountWidgetView.swift   # Widget UI view
@@ -149,6 +151,44 @@ targets:
         NSHealthShareUsageDescription: "This app needs access to your step count data to display it on the watch face."
 ```
 
+### 6.3 Bundle Identifiers and Target Configuration
+
+Use explicit, stable bundle identifiers for both targets. Do not rely on XcodeGen to infer or automatically generate bundle identifiers.
+
+For this personal project, use the following identifiers:
+
+- **WatchOS application target (`StepCountApp`):** `com.personal.stepcount`
+- **WidgetKit extension target (`StepCountWidgetExtension`):** `com.personal.stepcount.widget`
+
+Configure these identifiers explicitly in `project.yml` using the `PRODUCT_BUNDLE_IDENTIFIER` build setting for each target. The identifiers must be unique, consistent across builds, and correctly associated with their respective targets.
+
+Example:
+
+```yaml
+targets:
+  StepCountApp:
+    type: application.watchos
+    platform: watchOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.stepcount
+    # Preserve the existing sources and other settings.
+
+  StepCountWidgetExtension:
+    type: app-extension.watchos
+    platform: watchOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.stepcount.widget
+    # Preserve the existing sources and other settings.
+```
+
+The snippet illustrates the required settings; integrate them into the existing target definitions rather than replacing other configuration.
+
+After running `xcodegen generate`, verify that each generated target has the intended bundle identifier. Confirm that the widget extension's identifier is distinct from the app's identifier and that the extension is correctly embedded in the containing watchOS application.
+
+Do not change these identifiers between builds unless there is a deliberate project identity change. If signing or installation requires additional configuration, report the issue and address it separately rather than silently changing the identifiers.
+
 ## 7. Implementation Strategy
 
 ### 7.1 Key Requirements Compliance
@@ -156,15 +196,17 @@ targets:
 - **Update Frequency:** WidgetKit controls actual scheduling and may delay refreshes. Do not promise a refresh every 15 minutes.
 - **Number Formatting:** Use abbreviated notation for numbers greater than 999 (e.g., `1.5k`).
 - **Authorization Handling:** Display `--` when HealthKit data is unavailable or before authorization.
-- **Widget Style:** Use `accessoryCircular` with a running shoe icon and step count display.
+- **Widget Style:** Use `accessoryCircular` with a running shoe icon and below the icon the step count display.
 
 ### 7.2 WidgetKit Implementation
-
+- Implement a circular/radial Apple Watch complication using WidgetKit's .accessoryCircular widget family.
+- The complication must display a running-shoe SF Symbol and below that the formatted today's total step count in the circular complication area.
 - Support the `accessoryCircular` family only.
+- Use an appropriate timeline refresh policy, recognizing that WidgetKit controls actual scheduling and may delay updates.
 - Query HealthKit directly when WidgetKit requests a timeline (no App Group cache).
 - Implement a timeline provider that generates appropriate date ranges for widget updates.
 - Use a reasonable refresh policy and handle midnight rollover appropriately.
-- Show a running-shoe symbol and the formatted step count.
+- Format counts above 999 using abbreviated notation (e.g., 1.5k).
 
 ## 8. HealthKit Requirements
 
