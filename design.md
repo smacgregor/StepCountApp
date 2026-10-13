@@ -120,36 +120,33 @@ StepCountApp/
 6. Report any issues that cannot be verified without a physical Apple Watch.
 
 ### 6.2 XcodeGen Configuration (`project.yml`)
+Use xcodegen and a project.yml to generate the xcode project and Info.plist files.
 
-```yaml
-name: StepCountApp
+**Required architecture**
+1. `StepCountApp` must be a modern, single-target watchOS application.
+2. `StepCountWidgetExtension` must be a separate WidgetKit extension that provides the `.accessoryCircular` complication.
+3. Do not create a WatchKit app/extension pair.
 
-options:
-  bundleIdPrefix: com.yourcompany
-  deploymentTarget:
-    watchOS: "27.0"
+**Prohibited target types**
+- `application.watchapp2`
+- `watchkit2-extension`
+- Any configuration that creates a legacy WatchKit app/extension pair.
 
-targets:
-  StepCountApp:
-    type: application.watchapp2
-    platform: watchOS
-    sources:
-      - path: StepCountApp
-      - path: Shared/HealthKitService.swift
-    info:
-      properties:
-        NSHealthShareUsageDescription: "This app needs access to your step count data to display it on the watch face."
+**Target configuration**
+- Main app: `type: application`, `platform: watchOS`.
+- Widget extension: use the XcodeGen-supported generic application extension target type, `type: app-extension`, `platform: watchOS`, and configure it as a WidgetKit extension.
+- Preserve the existing bundle identifiers, watchOS 27.0 deployment target, HealthKit requirements, source files, and UI requirements.
+- Ensure the widget's Info.plist contains the appropriate WidgetKit extension-point configuration (`com.apple.widgetkit-extension`) and that the widget is correctly embedded in the watchOS app.
 
-  StepCountWidgetExtension:
-    type: watchkit2-extension
-    platform: watchOS
-    sources:
-      - path: StepCountWidgetExtension
-      - path: Shared/HealthKitService.swift
-    info:
-      properties:
-        NSHealthShareUsageDescription: "This app needs access to your step count data to display it on the watch face."
-```
+**Verification**
+1. Inspect the installed XcodeGen version and its supported target types.
+2. Update `project.yml` only; regenerate the Xcode project.
+3. Inspect the generated project and build settings to confirm the app is a single-target watchOS application and the second target is a WidgetKit extension—not a WatchKit extension.
+4. Build the project for the watch simulator.
+5. If the duplicate `CopyAndPreserveArchs` executable error persists, identify the exact duplicate build commands and fix the underlying cause rather than changing target types speculatively.
+6. Report the actual generated product types and build result.
+
+Do not claim success merely because XcodeGen generates a project. Do not reintroduce either prohibited WatchKit target type.
 
 ### 6.3 Bundle Identifiers and Target Configuration
 
@@ -188,6 +185,21 @@ The snippet illustrates the required settings; integrate them into the existing 
 After running `xcodegen generate`, verify that each generated target has the intended bundle identifier. Confirm that the widget extension's identifier is distinct from the app's identifier and that the extension is correctly embedded in the containing watchOS application.
 
 Do not change these identifiers between builds unless there is a deliberate project identity change. If signing or installation requires additional configuration, report the issue and address it separately rather than silently changing the identifiers.
+
+### 6.4 Buiding and Fixing Errors
+Attempt a real build using the discovered scheme and an appropriate watchOS simulator destination. For example, adapt this command to the actual project:
+xcodebuild -project StepCountViewer.xcodeproj -scheme ACTUAL_SCHEME -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build
+Use the actual project path and scheme. If this generic destination is unsupported, inspect xcodebuild -showdestinations and select a valid alternative.
+If the build fails:
+	1	Read the relevant compiler or build-system errors.
+	2	Identify the underlying cause.
+	3	Make the smallest appropriate code or project configuration changes.
+	4	Regenerate the project with XcodeGen if the specification changed.
+	5	Build again.
+Repeat until the build succeeds or a specific, demonstrated environment limitation prevents further progress.
+Do not hide errors, suppress warnings indiscriminately, or change unrelated application behavior to force a build.
+
+A successful simulator build verifies compilation, not -device operation, HealthKit authorization behavior, or live complication refresh behavior. Be explicit about what has and has not been tested. 
 
 ## 7. Implementation Strategy
 
