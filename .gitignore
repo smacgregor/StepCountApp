@@ -1,0 +1,18 @@
+# XcodeGen-generated project
+
+*.xcodeproj/
+
+# Xcode user-specific settings
+
+xcuserdata/
+*.xcuserstate
+
+# Build products
+
+build/
+DerivedData/
+
+# macOS
+
+.DS_Store
+
