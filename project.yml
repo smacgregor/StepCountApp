@@ -1,4 +1,11 @@
 name: StepCountApp
+
+options:
+  bundleIdPrefix: com.bigmacsoftware
+  deploymentTarget:
+    watchOS: "27.0"
+  createIntermediateGroups: true
+
 targets:
   # Modern Single-Target watchOS App
   StepCountApp:
@@ -7,24 +14,18 @@ targets:
     deploymentTarget: "27.0"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.personal.StepCountApp
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.StepCountApp 
+        INFOPLIST_KEY_WKWatchOnly: YES
         MARKETING_VERSION: 1.0
         CURRENT_PROJECT_VERSION: 1
-        SUPPORTS_MACCATALYST: false
-        WATCHOS_DEPLOYMENT_TARGET: 27.0
-        ENABLE_PREVIEWS: true
-        INFOPLIST_KEY_NSHealthShareUsageDescription: "This app accesses your step count data to display it in the watch face."
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "We need access to read your step data to display it on your watch face."
+        CODE_SIGN_ENTITLEMENTS: StepCountApp/StepCountApp.entitlements
     sources:
       - path: Shared/
       - path: StepCountApp/
     dependencies:
       - target: StepCountWidgetExtension
-        embed: true
-    info:
-      path: StepCountApp/Info.plist
-      properties:
-        NSHealthShareUsageDescription: "This app accesses your step count data to display it in the watch face."
-        CFBundleDisplayName: StepCountApp
 
   StepCountWidgetExtension:
     type: app-extension
@@ -32,22 +33,16 @@ targets:
     deploymentTarget: "27.0"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.personal.StepCountApp.StepCountWidgetExtension
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.StepCountApp.StepCountWidgetExtension
         MARKETING_VERSION: 1.0
         CURRENT_PROJECT_VERSION: 1
-        WATCHOS_DEPLOYMENT_TARGET: 27.0
-        INFOPLIST_KEY_NSHealthShareUsageDescription: "This app accesses your step count data to display it in the watch face."
-        INFOPLIST_KEY_CFBundleIdentifier: com.personal.StepCountApp.StepCountWidgetExtension 
+        CODE_SIGN_ENTITLEMENTS: StepCountWidgetExtension/StepCountWidgetExtension.entitlements
     sources:
       - path: Shared/
       - path: StepCountWidgetExtension/
     info:
-      path: StepCountWidgetExtension/Info.plist
+      path: Info.plist
       properties:
-        NSHealthShareUsageDescription: "This app accesses your step count data to display it in the watch face."
-        CFBundleDisplayName: StepCountWidgetExtension
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
-          NSExtensionAttributes:
-            WidgetFamily:
-              - accessoryCircular
