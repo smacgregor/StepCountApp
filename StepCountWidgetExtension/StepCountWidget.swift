@@ -31,7 +31,7 @@ struct StepCountWidgetEntryView : View {
     private func formatStepCount(_ count: Double) -> String {
         if count == 0 {
             return "--"
-        } else if count >= 1000 {
+        } else if count >= 10000 {
             let formatted = count / 1000
             return "\(formatted)k"
         } else {

@@ -18,6 +18,32 @@ class HealthKitService {
     }
     
     func getTodaysStepCount(completion: @escaping (Double?, Error?) -> Void) {
+        // First check if we already have authorization
+        let status = healthStore.authorizationStatus(for: stepCountType)
+        
+        if status == .notDetermined {
+            // Request authorization first, then fetch data
+            requestAuthorization { success, error in
+                if success {
+                    self.fetchTodaysStepCount(completion: completion)
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, error ?? NSError(domain: "HealthKitError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Authorization denied"]))
+                    }
+                }
+            }
+        } else if status == .sharingDenied {
+            // Authorization was denied
+            DispatchQueue.main.async {
+                completion(nil, NSError(domain: "HealthKitError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Access denied"]))
+            }
+        } else {
+            // Already authorized, fetch the data now
+            fetchTodaysStepCount(completion: completion)
+        }
+    }
+    
+    private func fetchTodaysStepCount(completion: @escaping (Double?, Error?) -> Void) {
         // Create a predicate for today's steps
         let calendar = Calendar.current
         let now = Date()
