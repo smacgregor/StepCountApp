@@ -17,15 +17,20 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.StepCountApp 
         INFOPLIST_KEY_WKWatchOnly: YES
+        DEVELOPMENT_TEAM: HEY2QHJ383 
         MARKETING_VERSION: 1.0
         CURRENT_PROJECT_VERSION: 1
         INFOPLIST_KEY_NSHealthShareUsageDescription: "We need access to read your step data to display it on your watch face."
-        CODE_SIGN_ENTITLEMENTS: StepCountApp/StepCountApp.entitlements
+#         CODE_SIGN_ENTITLEMENTS: StepCountApp/StepCountApp.entitlements
     sources:
       - path: Shared/
       - path: StepCountApp/
     dependencies:
       - target: StepCountWidgetExtension
+    entitlements:
+      path: StepCountApp/StepCountApp.entitlements
+      properties:
+        com.apple.developer.healthkit: true
 
   StepCountWidgetExtension:
     type: app-extension
@@ -35,9 +40,10 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.bigmacsoftware.StepCountApp.StepCountWidgetExtension
+        DEVELOPMENT_TEAM: HEY2QHJ383 
         MARKETING_VERSION: 1.0
         CURRENT_PROJECT_VERSION: 1
-        CODE_SIGN_ENTITLEMENTS: StepCountWidgetExtension/StepCountWidgetExtension.entitlements
+#        CODE_SIGN_ENTITLEMENTS: StepCountWidgetExtension/StepCountWidgetExtension.entitlements
     sources:
       - path: Shared/
       - path: StepCountWidgetExtension/
@@ -46,3 +52,7 @@ targets:
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: StepCountWidgetExtension/StepCountWidgetExtension.entitlements
+      properties:
+        com.apple.developer.healthkit: true
