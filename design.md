@@ -8,19 +8,19 @@ This document outlines the architecture, data flow, build system, and other desi
 
 ### 2.1 Application Structure
 
-The project will contain a native watchOS application target and a separate WidgetKit extension target that provides the circular Apple Watch complication.
+The project will contain a modern single-target watchOS application that includes both the main UI and WidgetKit complication support. The app target is configured as a standalone watch-only application using WKWatchOnly = TRUE.
 
 
 ```text
 StepCountApp/
 ├── Shared/                              # Shared source directory
 │   └── HealthKitService.swift          # HealthKit data access service
-├── StepCountApp/                        # Main watchOS application target
+├── StepCountApp/                        # Main watchOS application target (standalone watch app)
 │   ├── StepCountApp.swift              # App entry point
 │   ├── Views/
 │   │   └── ContentView.swift           # Main app view
 │   └── Assets.xcassets                 # App assets
-├── StepCountWidgetExtension/           # WidgetKit extension target
+├── StepCountWidgetExtension/           # WidgetKit extension target (embedded in main app)
 │   ├── StepCountWidget.swift           # Declares the WidgetKit widget, identifies the supported .accessoryCircular family, and connects the timeline provider to the widget view.
 │   ├── StepCountTimelineProvider.swift # WidgetKit timeline provider
 │   ├── Views/
@@ -32,8 +32,8 @@ StepCountApp/
 
 ### 2.2 Target Membership
 
-- **StepCountApp:** watchOS application target with all UI and app logic.
-- **StepCountWidgetExtension:** WidgetKit extension target for complications.
+- **StepCountApp:** watchOS application target configured as a standalone watch-only app with all UI and app logic.
+- **StepCountWidgetExtension:** WidgetKit extension target embedded in the main app for complications.
 - **HealthKitService.swift:** Shared data access component in the top-level Shared directory, included exactly once in each target's sources configuration.
 
 ## 3. System Requirements
@@ -120,10 +120,10 @@ StepCountApp/
 6. Report any issues that cannot be verified without a physical Apple Watch.
 
 ### 6.2 XcodeGen Configuration (`project.yml`)
-Use xcodegen and a project.yml to generate the xcode project and Info.plist files.
+Use xcodegen and a project.yml to generate the xcode project. Info.plist files are manually managed in `project.yml` rather than auto-generated.
 
 **Required architecture**
-1. `StepCountApp` must be a modern, single-target watchOS application.
+1. `StepCountApp` must be a modern, single-target watchOS application configured as a standalone watch-only app.
 2. `StepCountWidgetExtension` must be a separate WidgetKit extension that provides the `.accessoryCircular` complication.
 3. Do not create a WatchKit app/extension pair.
 
@@ -133,7 +133,7 @@ Use xcodegen and a project.yml to generate the xcode project and Info.plist file
 - Any configuration that creates a legacy WatchKit app/extension pair.
 
 **Target configuration**
-- Main app: `type: application`, `platform: watchOS`.
+- Main app: `type: application`, `platform: watchOS`, with `INFOPLIST_KEY_WKWatchOnly: YES` to indicate standalone watch app.
 - Widget extension: use the XcodeGen-supported generic application extension target type, `type: app-extension`, `platform: watchOS`, and configure it as a WidgetKit extension.
 - Preserve the existing bundle identifiers, watchOS 27.0 deployment target, HealthKit requirements, source files, and UI requirements.
 - Ensure the widget's Info.plist contains the appropriate WidgetKit extension-point configuration (`com.apple.widgetkit-extension`) and that the widget is correctly embedded in the watchOS app.
