@@ -97,7 +97,7 @@ StepCountApp/
 
 - Fetch today's cumulative step count from HealthKit directly when requested by WidgetKit.
 - Automatically handle authorization requests in the main app.
-- Format numbers over 999 using abbreviated notation (e.g., `1.5k`).
+- Format numbers using abbreviated notation (e.g., `1.5k`) for values >= 10,000 and full number with commas for values < 10,000 (e.g., 1,234).
 - Follow Apple's guidelines for battery optimization and data access frequency.
 
 ## 6. Build System and Configuration
@@ -206,7 +206,7 @@ A successful simulator build verifies compilation, not -device operation, Health
 ### 7.1 Key Requirements Compliance
 
 - **Update Frequency:** WidgetKit controls actual scheduling and may delay refreshes. Do not promise a refresh every 15 minutes.
-- **Number Formatting:** Use abbreviated notation for numbers greater than 999 (e.g., `1.5k`).
+- **Number Formatting:** Use abbreviated notation (e.g., `1.5k`) for numbers >= 10,000, and full number with commas for values < 10,000 (e.g., `1,234`).
 - **Authorization Handling:** Display `--` when HealthKit data is unavailable or before authorization.
 - **Widget Style:** Use `accessoryCircular` with a running shoe icon and below the icon the step count display.
 
