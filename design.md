@@ -218,7 +218,7 @@ A successful simulator build verifies compilation, not -device operation, Health
 - Query HealthKit directly when WidgetKit requests a timeline (no App Group cache).
 - Implement a timeline provider that generates appropriate date ranges for widget updates.
 - Use a reasonable refresh policy and handle midnight rollover appropriately.
-- Format counts above 999 using abbreviated notation (e.g., 1.5k).
+- Format counts using abbreviated notation (e.g., 1.5k) for values >= 10,000 and full number with commas for values < 10,000 (e.g., 1,234).
 
 ## 8. HealthKit Requirements
 

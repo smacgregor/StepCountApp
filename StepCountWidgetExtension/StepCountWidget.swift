@@ -35,7 +35,11 @@ struct StepCountWidgetEntryView : View {
             let formatted = count / 1000
             return "\(formatted)k"
         } else {
-            return String(format: "%.0f", count)
+            // Format with commas for numbers less than 10,000
+            let numberFormatter = NumberFormatter()
+            numberFormatter.numberStyle = .decimal
+            numberFormatter.minimumIntegerDigits = 1
+            return numberFormatter.string(from: NSNumber(value: count)) ?? "\(count)"
         }
     }
 }
