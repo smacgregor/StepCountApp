@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 
+@main
 struct StepCountWidget: Widget {
     let kind: String = "StepCountWidget"
 
@@ -18,29 +19,33 @@ struct StepCountWidgetEntryView : View {
     var entry: SimpleEntry
 
     var body: some View {
-        VStack {
-            Image(systemName: "figure.run")
-                .font(.system(size: 20))
-                .foregroundColor(.blue)
-            
+        VStack(spacing: 2) {
+            Image(systemName: "shoe.running.and.shadow.fill")
+                .font(.system(size: 18, weight: .medium))
+
             Text(formatStepCount(entry.stepCount))
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(for: .widget) {
+            Color.clear
         }
     }
     
+
     private func formatStepCount(_ count: Double) -> String {
-        if count == 0 {
-            return "--"
-        } else if count >= 10000 {
-            let formatted = count / 1000
-            return "\(formatted)k"
-        } else {
-            // Format with commas for numbers less than 10,000
-            let numberFormatter = NumberFormatter()
-            numberFormatter.numberStyle = .decimal
-            numberFormatter.minimumIntegerDigits = 1
-            return numberFormatter.string(from: NSNumber(value: count)) ?? "\(count)"
+        guard count > 0 else { return "--" }
+
+        if count >= 10_000 {
+            return String(format: "%.1fk", count / 1_000)
         }
+
+        return NumberFormatter.localizedString(
+            from: NSNumber(value: Int(count)),
+            number: .decimal
+        )
     }
 }
 

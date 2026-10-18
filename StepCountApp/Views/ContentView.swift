@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var stepCount: Double = 0
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -21,25 +23,32 @@ struct ContentView: View {
             }
         }
         .onAppear(perform: loadStepCount)
+        .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        loadStepCount()
+                    }
+                }
     }
     
     private func loadStepCount() {
         isLoading = true
         errorMessage = nil
         
-        HealthKitService.shared.getTodaysStepCount { stepCount, error in
-            DispatchQueue.main.async {
-                self.isLoading = false
-                
-                if let error = error {
-                    self.errorMessage = error.localizedDescription
-                    return
-                }
-                
-                if let stepCount = stepCount {
-                    self.stepCount = stepCount
-                } else {
-                    self.stepCount = 0
+        HealthKitService.shared.requestAuthorization { success, error in
+            HealthKitService.shared.getTodaysStepCount { stepCount, error in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    
+                    if let error = error {
+                        self.errorMessage = error.localizedDescription
+                        return
+                    }
+                    
+                    if let stepCount = stepCount {
+                        self.stepCount = stepCount
+                    } else {
+                        self.stepCount = 0
+                    }
                 }
             }
         }
@@ -54,7 +63,6 @@ struct ContentView: View {
         } else {
             // Format with commas for numbers less than 10,000
             let numberFormatter = NumberFormatter()
-            numberFormatter.numberStyle = .decimal
             numberFormatter.minimumIntegerDigits = 1
             return numberFormatter.string(from: NSNumber(value: count)) ?? "\(count)"
         }
