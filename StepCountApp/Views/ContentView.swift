@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
@@ -17,9 +18,12 @@ struct ContentView: View {
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             } else {
-                Text(formatStepCount(stepCount))
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                VStack(spacing: 2) {
+                    Image(systemName: "shoe.running.and.shadow.fill")
+                    Text(formatStepCount(stepCount))
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                }
             }
         }
         .onAppear(perform: loadStepCount)
@@ -49,6 +53,7 @@ struct ContentView: View {
                     } else {
                         self.stepCount = 0
                     }
+                    WidgetCenter.shared.reloadTimelines(ofKind: "StepCountWidget")
                 }
             }
         }
@@ -57,14 +62,13 @@ struct ContentView: View {
     private func formatStepCount(_ count: Double) -> String {
         if count == 0 {
             return "--"
-        } else if count >= 10000 {
-            let formatted = count / 1000
-            return "\(formatted)k"
         } else {
-            // Format with commas for numbers less than 10,000
             let numberFormatter = NumberFormatter()
             numberFormatter.minimumIntegerDigits = 1
-            return numberFormatter.string(from: NSNumber(value: count)) ?? "\(count)"
+            return NumberFormatter.localizedString(
+                from: NSNumber(value: Int(count)),
+                number: .decimal
+            )
         }
     }
 }

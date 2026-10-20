@@ -11,14 +11,42 @@ struct StepCountWidget: Widget {
         }
         .configurationDisplayName("Step Count")
         .description("Displays today's step count.")
-        .supportedFamilies([.accessoryCircular])
+        .supportedFamilies([.accessoryCircular, .accessoryCorner])
     }
 }
 
 struct StepCountWidgetEntryView : View {
+    @Environment(\.widgetFamily) private var family
     var entry: SimpleEntry
 
     var body: some View {
+        switch family {
+        case .accessoryCorner:
+            cornerView
+        default:
+            circularView
+        }
+
+    }
+    private let stepGoal = 10_000.0
+
+    private var cornerView: some View {
+        let progress = min(
+            max(entry.stepCount / stepGoal, 0),
+            1
+        )
+
+        return Text("\(formatStepCount(entry.stepCount)) \(Image(systemName: "shoe.running.and.shadow.fill"))")
+            .widgetCurvesContent()
+            .widgetLabel {
+                ProgressView(value: progress)
+            }
+            .containerBackground(for: .widget) {
+                Color.clear
+            }
+    }
+
+    private var circularView: some View {
         VStack(spacing: 2) {
             Image(systemName: "shoe.running.and.shadow.fill")
                 .font(.system(size: 18, weight: .medium))
@@ -34,7 +62,6 @@ struct StepCountWidgetEntryView : View {
         }
     }
     
-
     private func formatStepCount(_ count: Double) -> String {
         guard count > 0 else { return "--" }
 
