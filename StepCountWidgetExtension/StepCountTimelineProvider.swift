@@ -16,8 +16,8 @@ struct StepCountTimelineProvider: TimelineProvider {
         HealthKitService.shared.getTodaysStepCount { stepCount, error in
             let entry = SimpleEntry(date: Date(), stepCount: stepCount ?? 0)
             
-            // Schedule next update in 15 minutes - this is what Apple recommends for apps that need frequent updates.
-            let refreshDate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+            // Schedule next update in 20 minutes - this is what Apple recommends for apps that need frequent updates.
+            let refreshDate = Calendar.current.date(byAdding: .minute, value: 20, to: Date())!
             let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
             
             completion(timeline)
